@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How Much Delay Goes Unnoticed? Perceptual Latency Thresholds in VR</title>
+<meta name="description" content="ICXR 2026 paper: perceptual latency thresholds (PSS and TBW) for lighting, sound, and rotation feedback in VR and on a conventional display.">
+<meta name="robots" content="index, follow, max-image-preview:large, max-video-preview:-1">
+<meta name="theme-color" content="#177245">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="FIP Lab, Saitama University">
+<meta property="og:title" content="How Much Delay Goes Unnoticed? Quantifying Perceptual Latency Thresholds Across Multimodalities in Virtual Reality">
+<meta property="og:description" content="Sound tolerates the least unnoticed delay (~95 ms), rotation the most (~165 ms); thresholds do not differ between an HMD and a conventional display.">
+<meta property="og:image" content="static/images/fig1-setup.jpg">
+<meta property="og:video" content="static/videos/video.mp4">
+<meta property="og:video:type" content="video/mp4">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fbfbf8; --surface:#ffffff; --ink:#1b1f1d; --muted:#5b6560; --line:#e3e6e1;
+  --accent:#177245; --accent-soft:#e7f2ec; --accent-ink:#0f5533;
+  --light:#d99a00; --light-soft:#fff4d6;
+  --sound:#c2410c; --sound-soft:#fde8dc;
+  --rot:#2563eb; --rot-soft:#e2ebfd;
+  --code:#f3f4f1;
+  --serif:Arial, "Noto Sans", "Helvetica Neue", Helvetica, sans-serif;
+  --sans:"Noto Sans", Arial, "Helvetica Neue", Helvetica, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121614; --surface:#191e1b; --ink:#e7ebe8; --muted:#9aa5a0; --line:#2a312d;
+    --accent:#3fb37a; --accent-soft:#183326; --accent-ink:#7fd6a9;
+    --light:#f0b72f; --light-soft:#3a2f12; --sound:#f08a5d; --sound-soft:#3b2116;
+    --rot:#6b9cff; --rot-soft:#18233d; --code:#1f2522;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121614; --surface:#191e1b; --ink:#e7ebe8; --muted:#9aa5a0; --line:#2a312d;
+  --accent:#3fb37a; --accent-soft:#183326; --accent-ink:#7fd6a9;
+  --light:#f0b72f; --light-soft:#3a2f12; --sound:#f08a5d; --sound-soft:#3b2116;
+  --rot:#6b9cff; --rot-soft:#18233d; --code:#1f2522;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:64px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);font-size:17px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink)}
+img,video{max-width:100%;height:auto;display:block}
+.skip{position:absolute;left:-999px;top:8px;background:var(--accent);color:#fff;padding:8px 12px;border-radius:6px;z-index:100;font-family:var(--sans)}
+.skip:focus{left:8px}
+
+/* nav */
+nav.top{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+nav.top ul{list-style:none;margin:0 auto;padding:0 16px;max-width:943px;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;font-family:var(--sans);font-size:14px}
+nav.top ul::-webkit-scrollbar{display:none}
+nav.top a{display:block;padding:14px 10px;color:var(--muted);text-decoration:none;white-space:nowrap;border-bottom:2px solid transparent}
+nav.top a:hover,nav.top a.active{color:var(--ink);border-bottom-color:var(--accent)}
+
+.wrap{max-width:943px;margin:0 auto;padding:0 16px}
+.wide{max-width:1104px;margin:0 auto;padding:0 16px}
+
+/* header */
+header.hero{padding:56px 0 24px;text-align:center}
+.venue{font-family:var(--sans);font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:var(--sans);font-size:clamp(28px,5vw,44px);line-height:1.15;margin:14px 0 6px;font-weight:700;letter-spacing:-.015em}
+h1 .sub{display:block;font-size:.58em;font-weight:400;color:var(--muted);margin-top:10px;line-height:1.3}
+.authors{list-style:none;padding:0;margin:22px 0 4px;display:flex;flex-wrap:wrap;justify-content:center;gap:4px 22px;font-family:var(--sans);font-size:17px}
+.authors a{text-decoration:none;color:var(--ink);border-bottom:1px dotted var(--muted)}
+.authors a:hover{color:var(--accent-ink)}
+.orcid{display:inline-block;width:14px;height:14px;vertical-align:-1px;margin-left:4px}
+.affil{font-family:var(--sans);color:var(--muted);font-size:15px;margin:2px 0}
+.actions{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:24px 0 8px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;background:var(--ink);color:var(--bg);text-decoration:none;font-family:var(--sans);font-weight:500;font-size:15px;border:0;cursor:pointer}
+.btn:hover{background:var(--accent);color:#fff}
+.btn svg{width:16px;height:16px}
+
+.tldr{margin:28px auto 0;background:var(--accent-soft);border-left:4px solid var(--accent);padding:18px 22px;border-radius:0 10px 10px 0;text-align:left}
+.tldr b.label{font-family:var(--sans);font-size:13px;letter-spacing:.08em;color:var(--accent-ink);display:block;margin-bottom:4px}
+
+section{padding:48px 0 8px}
+#video{padding-bottom:40px}
+#setup{padding-top:56px}
+h2{font-family:var(--sans);font-size:26px;line-height:1.25;margin:0 0 6px;letter-spacing:-.01em}
+h2 .kicker{display:block;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+h3{font-family:var(--sans);font-size:19px;margin:32px 0 8px}
+p{margin:12px 0}
+.lead{font-size:20px;color:var(--muted)}
+
+figure{margin:28px 0}
+figure img{border-radius:10px;border:1px solid var(--line);background:#fff;width:100%;height:auto;aspect-ratio:auto}
+figcaption{font-size:15.5px;color:var(--muted);margin-top:10px;line-height:1.55}
+figcaption b{color:var(--ink)}
+.video-frame{border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#000}
+.video-frame video{width:100%;aspect-ratio:16/9}
+
+/* spec grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:16px 0}
+.grid div{background:var(--surface);padding:14px 16px}
+.grid dt{font-family:var(--sans);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.grid dd{margin:0;font-size:16px;line-height:1.45}
+dl{margin:0}
+
+/* modality chips */
+.mods{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0}
+.mod{border-radius:12px;padding:16px;border:1px solid var(--line);background:var(--surface)}
+.mod .ico{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;margin-bottom:8px}
+.mod h4{margin:0 0 4px;font-family:var(--sans);font-size:16px}
+.mod p{margin:0;font-size:15px;color:var(--muted);line-height:1.45}
+.m-light .ico{background:var(--light-soft);color:var(--light)}
+.m-sound .ico{background:var(--sound-soft);color:var(--sound)}
+.m-rot .ico{background:var(--rot-soft);color:var(--rot)}
+@media (max-width:620px){.mods{grid-template-columns:1fr}}
+
+/* steps */
+.steps{counter-reset:s;list-style:none;padding:0;margin:16px 0}
+.steps li{position:relative;padding:0 0 14px 44px}
+.steps li::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:2px;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-family:var(--sans);font-size:14px;font-weight:600;display:grid;place-items:center}
+
+/* definitions */
+.defs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+.def{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.def b{font-family:var(--sans)}
+.def p{margin:6px 0 0;font-size:16px}
+@media (max-width:620px){.defs{grid-template-columns:1fr}}
+.eq{font-family:var(--mono);font-size:14.5px;background:var(--code);padding:10px 14px;border-radius:8px;overflow-x:auto;margin:10px 0}
+
+/* explorer */
+.explorer{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;margin:20px 0}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;font-family:var(--sans);font-size:14px;background:var(--bg)}
+.seg button{border:0;background:transparent;color:var(--muted);padding:7px 16px;border-radius:999px;cursor:pointer;font:inherit}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.chart{margin-top:18px}
+.chart svg{width:100%;height:auto;display:block;overflow:visible}
+.chart text{font-family:var(--sans);fill:var(--muted);font-size:12px}
+.chart .lbl{fill:var(--ink);font-size:13px;font-weight:600}
+.chart .val{fill:var(--ink);font-size:13px;font-weight:600}
+.chart .tbw{font-size:12px}
+.note{font-family:var(--sans);font-size:13px;color:var(--muted);margin-top:10px}
+
+/* try it */
+.tryit{display:grid;grid-template-columns:1.1fr 1fr;gap:20px;align-items:center}
+@media (max-width:700px){.tryit{grid-template-columns:1fr}}
+.stage{position:relative;aspect-ratio:4/3;border-radius:12px;background:linear-gradient(#3a3f3c,#262a28);overflow:hidden;display:grid;place-items:center}
+.stage .glow{position:absolute;inset:0;background:radial-gradient(circle at 50% 38%,rgba(255,214,102,.75),transparent 60%);opacity:0;transition:opacity 40ms linear}
+.stage.on .glow{opacity:1}
+.lamp{position:relative;width:70px}
+.lamp .shade{width:70px;height:46px;background:#d33;border-radius:6px 6px 2px 2px;transition:background 40ms}
+.stage.on .lamp .shade{background:#ff5a4a;box-shadow:0 0 40px 10px rgba(255,210,90,.7)}
+.lamp .pole{width:6px;height:60px;margin:0 auto;background:#ddd}
+.lamp .base{width:46px;height:8px;margin:0 auto;background:#eee;border-radius:4px}
+.fan{width:80px;height:80px;border-radius:50%;border:4px solid #ddd;display:grid;place-items:center}
+.fan svg{width:62px;height:62px}
+.fan.spin svg{animation:spin .25s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.speaker{width:70px;height:96px;background:#1c1c1c;border-radius:8px;display:grid;place-items:center;border:2px solid #444}
+.speaker span{width:40px;height:40px;border-radius:50%;background:#333;border:3px solid #555;transition:transform 40ms}
+.speaker.on span{transform:scale(1.15);border-color:#aaa}
+.press{margin-top:6px;width:84px;height:84px;border-radius:50%;border:0;background:radial-gradient(circle at 40% 35%,#ff6b6b,#c41f1f);box-shadow:0 6px 0 #7e1010;color:#fff;font-family:var(--sans);font-weight:700;font-size:15px;cursor:pointer;touch-action:manipulation}
+.press:active{transform:translateY(4px);box-shadow:0 2px 0 #7e1010}
+.ctrl label{font-family:var(--sans);font-size:14px;color:var(--muted);display:block;margin:14px 0 6px}
+.ctrl input[type=range]{width:100%;accent-color:var(--accent)}
+.ctrl output{font-family:var(--mono);font-weight:500;color:var(--ink)}
+.pressrow{display:flex;align-items:center;gap:18px;margin-top:12px;flex-wrap:wrap}
+.hint{font-family:var(--sans);font-size:13.5px;color:var(--muted)}
+.verdict{font-family:var(--sans);font-size:14px;padding:8px 12px;border-radius:8px;background:var(--accent-soft);color:var(--accent-ink);margin-top:12px}
+
+/* table */
+table{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:15px;margin:12px 0}
+th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+td.num{font-family:var(--mono);text-align:right}
+th.num{text-align:right}
+tr.vr-row td:first-child,tr.dp-row td:first-child{font-weight:600}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.tbl-wrap table{margin:0}
+details{margin:16px 0;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+details summary{cursor:pointer;padding:12px 16px;font-family:var(--sans);font-size:15px;font-weight:500}
+details[open] summary{border-bottom:1px solid var(--line)}
+details .inner{padding:12px 16px}
+
+/* takeaways */
+.cards{display:grid;gap:14px;margin:20px 0}
+.card{display:grid;grid-template-columns:64px 1fr;gap:6px 16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.card .n{font-family:var(--sans);font-size:34px;font-weight:700;color:var(--accent);line-height:1}
+.card h3{margin:0 0 4px;font-size:18px}
+.card p{margin:0;font-size:16.5px}
+@media (max-width:520px){.card{grid-template-columns:1fr}}
+.callout{border:2px solid var(--accent);border-radius:12px;padding:16px 20px;background:var(--accent-soft);margin:20px 0}
+.callout b{font-family:var(--sans)}
+.budget{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;font-family:var(--sans)}
+.budget span{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:14.5px}
+
+ul.lim li{margin-bottom:8px}
+
+/* bibtex */
+.bib{position:relative}
+.bib pre{font-family:var(--mono);font-size:13.5px;line-height:1.55;background:var(--code);border:1px solid var(--line);border-radius:10px;padding:18px;overflow-x:auto;margin:12px 0}
+.copy{position:absolute;top:10px;right:10px;font-family:var(--sans);font-size:13px;padding:6px 12px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+
+footer{margin-top:64px;border-top:1px solid var(--line);padding:32px 0 48px;font-family:var(--sans);font-size:14px;color:var(--muted)}
+footer .row{display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:flex-start}
+footer address{font-style:normal;line-height:1.6}
+footer img{height:44px;width:auto}
+.ack{font-size:14.5px;color:var(--muted)}
+.theme-toggle{background:none;border:1px solid var(--line);color:var(--muted);border-radius:6px;padding:6px 10px;font:inherit;cursor:pointer}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<nav class="top" aria-label="Sections">
+  <ul>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#video">Video</a></li>
+    <li><a href="#setup">Setup</a></li>
+    <li><a href="#method">Method</a></li>
+    <li><a href="#results">Results</a></li>
+    <li><a href="#tryit">Try it</a></li>
+    <li><a href="#guidelines">Guidelines</a></li>
+    <li><a href="#bibtex">BibTeX</a></li>
+  </ul>
+</nav>
+
+<main id="main">
+<header class="hero wrap" id="overview">
+  <div class="venue">International Conference on Extended Reality (ICXR) 2026</div>
+  <h1>How Much Delay Goes Unnoticed?
+    <span class="sub">Quantifying Perceptual Latency Thresholds Across Multimodalities in Virtual Reality</span></h1>
+  <ul class="authors">
+    <li><a href="https://orcid.org/0009-0006-7206-2763" rel="noopener">Natthaphon Hatsakornkhanachok</a><svg class="orcid" viewBox="0 0 24 24" aria-label="ORCID"><circle cx="12" cy="12" r="12" fill="#A6CE39"/><path fill="#fff" d="M8.1 17.6H6.6V7.1h1.5v10.5zm-.8-12a.95.95 0 110 1.9.95.95 0 010-1.9zM10.3 7.1h4c3.8 0 5.5 2.7 5.5 5.3 0 2.8-2.2 5.3-5.5 5.3h-4V7.1zm1.5 9.2h2.4c3.4 0 4.1-2.6 4.1-3.9 0-2.1-1.3-3.9-4.2-3.9h-2.3v7.8z"/></svg></li>
+    <li><a href="https://orcid.org/0000-0003-2720-7768" rel="noopener">Parinya Punpongsanon</a><svg class="orcid" viewBox="0 0 24 24" aria-label="ORCID"><circle cx="12" cy="12" r="12" fill="#A6CE39"/><path fill="#fff" d="M8.1 17.6H6.6V7.1h1.5v10.5zm-.8-12a.95.95 0 110 1.9.95.95 0 010-1.9zM10.3 7.1h4c3.8 0 5.5 2.7 5.5 5.3 0 2.8-2.2 5.3-5.5 5.3h-4V7.1zm1.5 9.2h2.4c3.4 0 4.1-2.6 4.1-3.9 0-2.1-1.3-3.9-4.2-3.9h-2.3v7.8z"/></svg></li>
+  </ul>
+  <p class="affil">Saitama University, Japan</p>
+  <div class="actions">
+    <a class="btn" href="static/pdf/ICXR2026_HowMuchDelay.pdf" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>Paper</a>
+    <a class="btn" href="#video"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Video</a>
+    <a class="btn" href="#bibtex"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20V2H6.5A2.5 2.5 0 004 4.5z"/></svg>BibTeX</a>
+  </div>
+
+  <div class="tldr">
+    <b class="label">TL;DR</b>
+    You press a virtual button and a lamp lights up, a speaker plays, or a fan spins. How late can that response be before you notice?
+    We measured it for 20 people: <b>sound is noticed earliest (~95&nbsp;ms in VR)</b>, <b>light at ~155&nbsp;ms</b>, and <b>rotation is noticed latest (~165&nbsp;ms)</b>.
+    The thresholds <b>did not differ between a VR headset and a regular monitor</b>, which suggests the action-and-feedback loop sets the threshold rather than immersion.
+  </div>
+</header>
+
+<section class="wrap" id="abstract">
+  <h2>Abstract</h2>
+  <p>In virtual reality (VR), delays between a user's action and sensory feedback disrupt immersion and responsiveness, yet careful budgeting can expand rather than degrade VR's design. We quantify perceptual latency thresholds across three modalities (lighting, sound, rotation) using a fixed-staircase procedure with ternary judgments (N&nbsp;=&nbsp;20) to estimate the Point of Subjective Simultaneity (PSS) and Temporal Binding Window (TBW). Sound showed the smallest unnoticed delay, rotation the largest, and thresholds differed significantly by modality. Extending to a conventional display revealed no platform differences, indicating thresholds are governed by sensorimotor engagement rather than immersion, yielding latency guidelines for VR application.</p>
+</section>
+
+<section class="wrap" id="video">
+  <h2>Video</h2>
+  <div class="video-frame" style="margin-top:16px">
+    <video controls preload="metadata" playsinline poster="static/images/poster.jpg">
+      <source src="static/videos/video.mp4" type="video/mp4">
+      Your browser does not support embedded video. <a href="static/videos/video.mp4">Download the video</a>.
+    </video>
+  </div>
+</section>
+
+<section class="wrap" id="setup">
+  <h2><span class="kicker">Setup</span>One virtual room, three kinds of feedback, two displays</h2>
+  <p>Every trial starts the same way: the participant presses a virtual button with their right index finger. One of three things happens after a controlled delay, and the participant reports which came first.</p>
+
+  <div class="mods">
+    <div class="mod m-light"><div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 00-4 12.7V17h8v-2.3A7 7 0 0012 2z"/></svg></div><h4>Lighting</h4><p>A lamp switches on and stays lit for about 1&nbsp;s.</p></div>
+    <div class="mod m-sound"><div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5zM15.5 8.5a5 5 0 010 7M19 5a10 10 0 010 14"/></svg></div><h4>Sound</h4><p>A speaker plays a clip through noise-cancelling headphones.</p></div>
+    <div class="mod m-rot"><div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"/><path d="M12 10c0-4 1-7 4-7s3 4-2 7M14 12c4 0 7 1 7 4s-4 3-7-2M12 14c0 4-1 7-4 7s-3-4 2-7M10 12c-4 0-7-1-7-4s4-3 7 2"/></svg></div><h4>Rotation</h4><p>A desk fan spins up to 800&nbsp;RPM.</p></div>
+  </div>
+
+  <figure>
+    <img src="static/images/fig1-setup.jpg" alt="Six panels of the virtual scene. Top row (HMD): a desk with a speaker, red lamp, fan and three red buttons; the lamp switching on as a virtual hand presses a button; a question panel with three answer options. Bottom row (conventional display): the same scene with a tracked hand and a webcam preview of the participant." width="1620" height="772" loading="lazy">
+    <figcaption><b>Figure 1. The two setups.</b> Top: the HMD scene (a) with speaker, lamp, fan and buttons; (b) the participant presses a button and the lamp lights for about 1&nbsp;s; (c) a question and three answers appear, and the participant answers out loud. Bottom: the same scene on a conventional display (d–f), with the hand tracked by a depth camera and a small preview of the participant.</figcaption>
+  </figure>
+
+  <h3>Hardware &amp; software at a glance</h3>
+  <dl class="grid">
+    <div><dt>Engine</dt><dd>Unity 2022.3.47f1, Oculus Integration, Low Poly Office Set</dd></div>
+    <div><dt>HMD</dt><dd>Meta Quest 3, built-in hand tracking, 72&nbsp;Hz</dd></div>
+    <div><dt>Conventional display</dt><dd>75&nbsp;Hz monitor; Intel RealSense D415 + MediaPipe 0.10.3 hand tracking</dd></div>
+    <div><dt>Audio</dt><dd>Sony WH-1000XM2 noise-cancelling headphones, 60% volume</dd></div>
+    <div><dt>Rotation stimulus</dt><dd>Virtual fan at 800&nbsp;RPM, with a brief spin-up</dd></div>
+    <div><dt>Baseline latency (subtracted)</dt><dd>VR: sound 14&nbsp;ms, light/fan &lt;0.01&nbsp;ms · Display: light/fan 21&nbsp;ms, sound 31&nbsp;ms</dd></div>
+  </dl>
+</section>
+
+<section class="wrap" id="method">
+  <h2><span class="kicker">Method</span>Finding the point where “late” feels “on time”</h2>
+  <p>We used a fixed-step staircase. The system delay starts at 0&nbsp;ms and moves in 10&nbsp;ms steps within −400 to +400&nbsp;ms, depending on what the participant reports:</p>
+  <ol class="steps">
+    <li><b>Press.</b> The participant presses the virtual button, and the feedback fires after the current delay.</li>
+    <li><b>Judge.</b> They choose one of three answers: <i>Action first</i>, <i>Outcome first</i>, or <i>Simultaneous / unsure</i>.</li>
+    <li><b>Adjust.</b> <i>Outcome first</i> or <i>Simultaneous</i> adds 10&nbsp;ms of delay; <i>Action first</i> removes 10&nbsp;ms. The staircase settles where “Action first” is reported about half the time.</li>
+    <li><b>Repeat.</b> 50 trials per modality, 3 modalities, 150 trials per platform (about 45&nbsp;min), with modality order counterbalanced.</li>
+  </ol>
+
+  <div class="defs">
+    <div class="def"><b>PSS: Point of Subjective Simultaneity</b><p>The delay at which action and feedback feel simultaneous. This is the <b>latency guideline</b>. It is the mean delay over trials 16–50, after a 15-trial burn-in.</p>
+      <div class="eq">PSS = (1/n) Σ<sub>i=16..50</sub> L<sub>i</sub>,&nbsp; n = 35</div></div>
+    <div class="def"><b>TBW: Temporal Binding Window</b><p>How spread out the judgments are, so how sensitive a modality is to timing jitter. We use it <b>only for comparison</b>, not as a tolerance band.</p>
+      <div class="eq">TBW = (z<sub>0.75</sub> − z<sub>0.25</sub>) · σ ≈ 1.349 σ</div></div>
+  </div>
+  <p>Twenty right-handed participants (aged 20–30; 16 men, 4 women) took part. Each did Experiment&nbsp;1 (HMD) and then Experiment&nbsp;2 (conventional display).</p>
+</section>
+
+<section class="wrap" id="results">
+  <h2><span class="kicker">Results</span>Sound is noticed first, rotation last, on both displays</h2>
+
+  <div class="explorer" aria-labelledby="exp-title">
+    <h3 id="exp-title" style="margin-top:0">Explore the thresholds</h3>
+    <div class="seg" role="group" aria-label="Platform">
+      <button type="button" data-p="vr" aria-pressed="true">VR (HMD)</button>
+      <button type="button" data-p="dp" aria-pressed="false">Conventional display</button>
+      <button type="button" data-p="both" aria-pressed="false">Compare</button>
+    </div>
+    <div class="chart" id="chart" role="img" aria-label="Point of subjective simultaneity by modality and platform"></div>
+    <p class="note">Dots show mean PSS ± SEM in ms. The number on the right is the TBW, which is shown for comparison only.</p>
+  </div>
+
+  <h3>Experiment 1: HMD</h3>
+  <p>Mean PSS was <b>154.83 ± 18.34&nbsp;ms</b> for lighting, <b>95.12 ± 21.60&nbsp;ms</b> for sound and <b>164.70 ± 16.54&nbsp;ms</b> for rotation (mean ± SEM). Modality had a significant effect (one-way RM-ANOVA, F(2,38)&nbsp;=&nbsp;17.73, p&nbsp;&lt;&nbsp;.01). Sound differed from both lighting (p&nbsp;=&nbsp;.01) and rotation (p&nbsp;&lt;&nbsp;.01) after Bonferroni correction. TBW did not differ across modalities (F(2,38)&nbsp;=&nbsp;1.48, p&nbsp;=&nbsp;.23). This supports H1-1 and rejects H1-2.</p>
+
+  <h3>Experiment 2: Conventional display</h3>
+  <p>Mean PSS was <b>134.36 ± 19.89&nbsp;ms</b> (lighting), <b>109.57 ± 18.49&nbsp;ms</b> (sound) and <b>179.73 ± 15.69&nbsp;ms</b> (rotation), and sound again differed from the other two. Here TBW also differed by modality: rotation's window (72.20&nbsp;ms) was wider than sound's (p&nbsp;=&nbsp;.05).</p>
+  <p>A two-way RM-ANOVA found <b>no main effect of platform</b> on PSS (F(1,19)&nbsp;=&nbsp;0.03, p&nbsp;=&nbsp;.86) or on TBW (F(1,19)&nbsp;=&nbsp;0.56, p&nbsp;=&nbsp;.46), and no platform × modality interaction. Modality had a strong main effect on both. Because platform order was fixed, we read this as <i>consistent with</i> platform-invariant thresholds rather than proof of it.</p>
+
+  <details>
+    <summary>Show the original Figures 2 and 3 from the paper</summary>
+    <div class="inner">
+      <figure style="margin-top:4px">
+        <img src="static/images/fig2-pss.png" alt="Violin and box plots of PSS for lighting, sound and rotation in VR and on the display; sound has the lowest median and rotation the highest." width="1336" height="852" loading="lazy">
+        <figcaption><b>Figure 2.</b> PSS in VR and on the conventional display for lighting, sound and rotation.</figcaption>
+      </figure>
+      <figure>
+        <img src="static/images/fig3-tbw.png" alt="Violin and box plots of TBW for the six conditions; rotation on the display has the widest spread." width="1336" height="812" loading="lazy">
+        <figcaption><b>Figure 3.</b> TBW in VR and on the conventional display for lighting, sound and rotation.</figcaption>
+      </figure>
+    </div>
+  </details>
+</section>
+
+<section class="wrap" id="tryit">
+  <h2><span class="kicker">Try it</span>Feel the delay yourself</h2>
+  <p>Pick a modality and a delay, then press the button. Try to find the point where the response stops feeling instant.</p>
+  <div class="explorer">
+    <div class="tryit">
+      <div class="stage" id="stage" aria-live="polite">
+        <div class="glow"></div>
+        <div id="obj" style="position:relative"></div>
+      </div>
+      <div class="ctrl">
+        <div class="seg" role="group" aria-label="Modality" id="modSeg">
+          <button type="button" data-m="light" aria-pressed="true">Lighting</button>
+          <button type="button" data-m="sound" aria-pressed="false">Sound</button>
+          <button type="button" data-m="rot" aria-pressed="false">Rotation</button>
+        </div>
+        <label for="delay">Added delay: <output id="dOut">0 ms</output></label>
+        <input id="delay" type="range" min="0" max="400" step="10" value="0">
+        <div class="pressrow">
+          <button class="press" id="press" type="button" aria-label="Press the button">PRESS</button>
+          <span class="hint">You can also press the space bar.</span>
+        </div>
+        <div class="verdict" id="verdict">Measured threshold for lighting in VR: about 155 ms</div>
+      </div>
+    </div>
+    <p class="note">This is only a demo. Your browser, display and input device add their own latency, often 20–80&nbsp;ms, on top of the slider. It won't reproduce the controlled study.</p>
+  </div>
+</section>
+
+<section class="wrap" id="guidelines">
+  <h2><span class="kicker">Guidelines</span>Spend your latency budget by modality</h2>
+  <p>We define the latency guideline as the PSS: the delay that users still perceive as simultaneous with their action.</p>
+  <div class="tbl-wrap">
+    <table>
+      <caption class="note" style="caption-side:bottom;text-align:left;padding:10px 12px">Table 1. Latency guidelines are derived from PSS. TBW is shown for comparison only and is not a validated absolute tolerance width.</caption>
+      <thead><tr><th>Modality</th><th>Platform</th><th class="num">Guideline (PSS)</th><th class="num">TBW (comparative)</th></tr></thead>
+      <tbody>
+        <tr><td><span class="dot" style="background:var(--light)"></span>Lighting</td><td>VR</td><td class="num">155 ms</td><td class="num">50.84 ms</td></tr>
+        <tr><td><span class="dot" style="background:var(--sound)"></span>Sound</td><td>VR</td><td class="num">95 ms</td><td class="num">43.05 ms</td></tr>
+        <tr><td><span class="dot" style="background:var(--rot)"></span>Rotation</td><td>VR</td><td class="num">165 ms</td><td class="num">48.33 ms</td></tr>
+        <tr><td><span class="dot" style="background:var(--light)"></span>Lighting</td><td>Display</td><td class="num">134 ms</td><td class="num">57.30 ms</td></tr>
+        <tr><td><span class="dot" style="background:var(--sound)"></span>Sound</td><td>Display</td><td class="num">110 ms</td><td class="num">55.62 ms</td></tr>
+        <tr><td><span class="dot" style="background:var(--rot)"></span>Rotation</td><td>Display</td><td class="num">180 ms</td><td class="num">72.20 ms</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="cards">
+    <div class="card"><div class="n">01</div><div><h3>Prioritise audio timing</h3><p>Sound has the smallest unnoticed delay on both platforms. If the pipeline has to cut latency somewhere, cut it in audio first.</p></div></div>
+    <div class="card"><div class="n">02</div><div><h3>Continuous motion buys you time</h3><p>Rotation, an ongoing event with a gradual onset, tolerates the most delay (about 165–180&nbsp;ms). On a monitor it also has the widest binding window.</p></div></div>
+    <div class="card"><div class="n">03</div><div><h3>One budget for headset and screen</h3><p>Thresholds did not differ between HMD and monitor. The same latency budget can serve both, because sensorimotor engagement seems to matter more than immersion.</p></div></div>
+  </div>
+
+  <div class="callout">
+    <b>Rule of thumb for interactive VR feedback</b>
+    <div class="budget"><span>🔊 Sound ≲ 95 ms</span><span>💡 Light ≲ 155 ms</span><span>🌀 Rotation ≲ 165 ms</span></div>
+  </div>
+  <p>These thresholds mark where a delay becomes <i>entirely unnoticed</i>, not just tolerable. They are much stricter than the latency typical of Wi-Fi or Zigbee smart-home devices.</p>
+</section>
+
+<section class="wrap" id="limitations">
+  <h2>Scope &amp; limitations</h2>
+  <ul class="lim">
+    <li><b>Platforms differ in more than immersion.</b> Refresh rate (72 vs 75&nbsp;Hz), field of view and stereo depth, distractions, and arm posture all differed between the HMD and the monitor.</li>
+    <li><b>The fan's spin-up is realistic but adds its own delay,</b> which may inflate the rotation PSS. Stimuli with an instant onset, or force feedback, would isolate motion perception.</li>
+    <li><b>Platform order was fixed</b> (HMD first). Learning or fatigue could contribute to the platform result and to the rotation-TBW difference between experiments.</li>
+    <li><b>Virtual-only interaction.</b> We did not compare with physical buttons or tactile clicks.</li>
+    <li><b>Sample size</b> (N&nbsp;=&nbsp;20) may inflate between-subject variability. TBW reflects the spread of the staircase, not a fitted psychometric slope.</li>
+  </ul>
+</section>
+
+<section class="wrap" id="bibtex">
+  <h2>BibTeX</h2>
+  <div class="bib">
+    <button class="copy" type="button" id="copyBib">Copy</button>
+<pre id="bibText">@inproceedings{hatsakornkhanachok2026delay,
+  title     = {How Much Delay Goes Unnoticed? Quantifying Perceptual
+               Latency Thresholds Across Multimodalities in Virtual Reality},
+  author    = {Hatsakornkhanachok, Natthaphon and Punpongsanon, Parinya},
+  booktitle = {International Conference on Extended Reality (ICXR)},
+  year      = {2026}
+}</pre>
+  </div>
+
+  <h3>Acknowledgments</h3>
+  <p class="ack">This work has been partially supported by JSPS Fellows Grant Number 16J00049 and JST BOOST Grant Number JPMJBY25E2.</p>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="row">
+      <address>
+        Fabrication, Interaction &amp; Perception Laboratory<br>
+        Department of Information &amp; Computer Sciences<br>
+        Graduate School of Science and Engineering, Saitama University<br>
+        Saitama 338-8570, Japan
+      </address>
+      <a href="https://fip.ics.saitama-u.ac.jp/" rel="noopener" aria-label="FIP Lab website"><img src="https://fip.ics.saitama-u.ac.jp/OlfaDrone/static/images/fip-logo.svg" alt="FIP Lab" onerror="this.replaceWith(document.createTextNode('FIP Lab ↗'))"></a>
+    </div>
+    <p style="margin-top:24px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">Page layout inspired by the Nerfies project-page family. Content © the authors.
+      <button class="theme-toggle" id="themeBtn" type="button">Toggle theme</button></p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  // ---------- data ----------
+  var D = {
+    vr: {light:{pss:154.83,sem:18.34,tbw:50.84}, sound:{pss:95.12,sem:21.60,tbw:43.05}, rot:{pss:164.70,sem:16.54,tbw:48.33}},
+    dp: {light:{pss:134.36,sem:19.89,tbw:57.30}, sound:{pss:109.57,sem:18.49,tbw:55.62}, rot:{pss:179.73,sem:15.69,tbw:72.20}}
+  };
+  var NAMES = {light:'Lighting', sound:'Sound', rot:'Rotation'};
+  var COLORS = {light:'var(--light)', sound:'var(--sound)', rot:'var(--rot)'};
+
+  // ---------- chart ----------
+  var chart = document.getElementById('chart');
+  function draw(mode){
+    var W=720, left=96, right=96, max=250, rowH = mode==='both'?62:46, top=10;
+    var mods=['sound','light','rot'];
+    var H = top + mods.length*rowH + 34;
+    var x = function(v){return left + (v/max)*(W-left-right);};
+    var s = '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">';
+    for (var t=0;t<=max;t+=50){
+      s+='<line x1="'+x(t)+'" x2="'+x(t)+'" y1="'+top+'" y2="'+(H-28)+'" stroke="var(--line)"/>';
+      s+='<text x="'+x(t)+'" y="'+(H-10)+'" text-anchor="middle">'+t+(t===max?' ms':'')+'</text>';
+    }
+    s+='<text x="'+(W-right+12)+'" y="'+(top+4)+'" class="tbw" dy="0">TBW</text>';
+    mods.forEach(function(m,i){
+      var y0 = top + i*rowH + rowH/2;
+      s+='<text x="0" y="'+(y0+4)+'" class="lbl">'+NAMES[m]+'</text>';
+      var plats = mode==='both' ? ['vr','dp'] : [mode];
+      plats.forEach(function(p,j){
+        var d=D[p][m];
+        var y = mode==='both' ? y0 + (j===0?-11:11) : y0;
+        var c = COLORS[m];
+        var op = (mode==='both' && p==='dp') ? 0.55 : 1;
+        s+='<line x1="'+x(d.pss-d.sem)+'" x2="'+x(d.pss+d.sem)+'" y1="'+y+'" y2="'+y+'" stroke="'+c+'" stroke-width="3" stroke-linecap="round" opacity="'+op+'"/>';
+        s+='<circle cx="'+x(d.pss)+'" cy="'+y+'" r="7" fill="'+c+'" opacity="'+op+'"'+(p==='dp'&&mode==='both'?' stroke="var(--surface)" stroke-width="2"':'')+'/>';
+        s+='<text x="'+(x(d.pss+d.sem)+8)+'" y="'+(y+4)+'" class="val">'+Math.round(d.pss)+(mode==='both'?(p==='vr'?' · VR':' · Display'):' ms')+'</text>';
+        s+='<text x="'+(W-right+12)+'" y="'+(y+4)+'" class="tbw">'+d.tbw.toFixed(1)+'</text>';
+      });
+    });
+    s+='</svg>';
+    chart.innerHTML = s;
+  }
+  var seg = document.querySelectorAll('[data-p]');
+  seg.forEach(function(b){ b.addEventListener('click', function(){
+    seg.forEach(function(o){o.setAttribute('aria-pressed', o===b?'true':'false');});
+    draw(b.dataset.p);
+  });});
+  draw('vr');
+
+  // ---------- try it ----------
+  var stage=document.getElementById('stage'), obj=document.getElementById('obj');
+  var slider=document.getElementById('delay'), out=document.getElementById('dOut');
+  var verdict=document.getElementById('verdict');
+  var mod='light', ac=null, timers=[];
+  var FAN='<svg viewBox="0 0 60 60"><g fill="#cfd6e4"><ellipse cx="30" cy="15" rx="7" ry="13"/><ellipse cx="30" cy="45" rx="7" ry="13"/><ellipse cx="15" cy="30" rx="13" ry="7"/><ellipse cx="45" cy="30" rx="13" ry="7"/></g><circle cx="30" cy="30" r="5" fill="#888"/></svg>';
+  function render(){
+    if(mod==='light') obj.innerHTML='<div class="lamp"><div class="shade"></div><div class="pole"></div><div class="base"></div></div>';
+    if(mod==='sound') obj.innerHTML='<div class="speaker" id="spk"><span></span></div>';
+    if(mod==='rot') obj.innerHTML='<div class="fan" id="fan">'+FAN+'</div>';
+    var d=D.vr[mod].pss;
+    verdict.textContent='Measured threshold for '+NAMES[mod].toLowerCase()+' in VR: about '+Math.round(d/5)*5+' ms';
+  }
+  document.querySelectorAll('#modSeg button').forEach(function(b){ b.addEventListener('click', function(){
+    document.querySelectorAll('#modSeg button').forEach(function(o){o.setAttribute('aria-pressed', o===b?'true':'false');});
+    mod=b.dataset.m; reset(); render();
+  });});
+  slider.addEventListener('input', function(){ out.textContent=slider.value+' ms'; });
+  function reset(){ timers.forEach(clearTimeout); timers=[]; stage.classList.remove('on'); var f=document.getElementById('fan'); if(f) f.classList.remove('spin'); var s=document.getElementById('spk'); if(s) s.classList.remove('on'); }
+  function beep(){
+    try{
+      ac = ac || new (window.AudioContext||window.webkitAudioContext)();
+      var o=ac.createOscillator(), g=ac.createGain();
+      o.type='triangle'; o.frequency.value=880;
+      g.gain.setValueAtTime(0.0001,ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.3,ac.currentTime+0.005);
+      g.gain.exponentialRampToValueAtTime(0.0001,ac.currentTime+0.35);
+      o.connect(g).connect(ac.destination); o.start(); o.stop(ac.currentTime+0.4);
+    }catch(e){}
+  }
+  function fire(){
+    reset();
+    if(mod==='sound'){ try{ ac = ac || new (window.AudioContext||window.webkitAudioContext)(); if(ac.state==='suspended') ac.resume(); }catch(e){} }
+    var d=+slider.value;
+    timers.push(setTimeout(function(){
+      if(mod==='light'){ stage.classList.add('on'); }
+      if(mod==='sound'){ beep(); var s=document.getElementById('spk'); if(s) s.classList.add('on'); }
+      if(mod==='rot'){ var f=document.getElementById('fan'); if(f) f.classList.add('spin'); }
+      timers.push(setTimeout(reset, 1000));
+    }, d));
+  }
+  document.getElementById('press').addEventListener('pointerdown', function(e){ e.preventDefault(); fire(); });
+  document.getElementById('press').addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); fire(); }});
+  document.addEventListener('keydown', function(e){
+    if(e.code==='Space' && !e.repeat){
+      var tag=(document.activeElement&&document.activeElement.tagName)||'';
+      if(tag==='INPUT'||tag==='TEXTAREA') return;
+      var r=stage.getBoundingClientRect(); if(r.bottom<0||r.top>innerHeight) return;
+      e.preventDefault(); fire();
+    }
+  });
+  render();
+
+  // ---------- bibtex copy ----------
+  document.getElementById('copyBib').addEventListener('click', function(){
+    var b=this, t=document.getElementById('bibText').textContent;
+    var done=function(){ b.textContent='Copied'; setTimeout(function(){b.textContent='Copy';},1500); };
+    if(navigator.clipboard){ navigator.clipboard.writeText(t).then(done, function(){}); }
+  });
+
+  // ---------- nav highlight ----------
+  var links=[].slice.call(document.querySelectorAll('nav.top a'));
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){ es.forEach(function(en){ if(en.isIntersecting){
+      links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href')==='#'+en.target.id); });
+    }});},{rootMargin:'-40% 0px -55% 0px'});
+    links.forEach(function(l){ var s=document.querySelector(l.getAttribute('href')); if(s) io.observe(s); });
+  }
+
+  // ---------- theme ----------
+  document.getElementById('themeBtn').addEventListener('click', function(){
+    var r=document.documentElement, cur=r.getAttribute('data-theme');
+    var dark = cur ? cur==='dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    var next = dark ? 'light' : 'dark';
+    r.setAttribute('data-theme', next);
+    try{ localStorage.setItem('theme', next); }catch(e){}
+  });
+  try{ var saved=localStorage.getItem('theme'); if(saved) document.documentElement.setAttribute('data-theme', saved); }catch(e){}
+})();
+</script>
+</body>
+</html>
